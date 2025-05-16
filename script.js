@@ -3,9 +3,9 @@ let attempts = 0;
 let revealedParts = 0;
 
 const respostasDiarias = {
-  "2025-05-16": "ferrari",
+  "2025-05-16": "civic",
   "2025-05-17": "fusca",
-  "2025-05-18": "golquadrado"
+  "2025-05-18": "corolla"
 };
 
 function getCurrentDate() {

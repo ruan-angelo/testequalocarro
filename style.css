@@ -1,0 +1,15 @@
+#image-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  width: 600px;     /* largura total da imagem */
+  height: 400px;    /* altura total da imagem */
+  margin: auto;
+  gap: 2px;
+}
+
+#image-container div {
+  background-size: 600px 400px;
+  background-repeat: no-repeat;
+  background-image: none;
+}

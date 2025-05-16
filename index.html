@@ -1,6 +1,5 @@
-
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -8,16 +7,24 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Qual é a imagem?</h1>
-  <div id="image-container"></div>
+  <h1>Jogo da Imagem</h1>
+
+  <div id="image-container">
+    <div style="background-position: 0px 0px;"></div>
+    <div style="background-position: -300px 0px;"></div>
+    <div style="background-position: -600px 0px;"></div>
+    <div style="background-position: 0px -300px;"></div>
+    <div style="background-position: -300px -300px;"></div>
+    <div style="background-position: -600px -300px;"></div>
+  </div>
 
   <form id="guess-form">
-    <input type="text" id="guess-input" placeholder="Digite seu palpite" required />
+    <input type="text" id="guess-input" placeholder="Digite seu palpite..." autocomplete="off" />
     <button type="submit" id="guess-submit">Chutar</button>
   </form>
 
   <div id="info"></div>
-  <div class="guess-history" id="guess-history"></div>
+  <div id="guess-history"><strong>Palpites:</strong> <span id="history-list"></span></div>
 
   <script src="script.js"></script>
 </body>

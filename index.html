@@ -1,31 +1,286 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Jogo da Imagem</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Qual o Carro? - Jogo Diário</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #f0f0f0;
+    margin: 20px;
+  }
+
+  h1 {
+    margin-bottom: 20px;
+    color: #333;
+  }
+
+  #image-container {
+    max-width: 900px;
+    height: 600px;
+    margin: 0 auto 20px;
+    display: flex;
+    flex-wrap: wrap;
+    border: 2px solid #333;
+    background: #ddd;
+  }
+
+  #image-container div {
+    width: 33.33%;  /* 900 / 3 em desktop */
+    height: 300px;
+    background-repeat: no-repeat;
+    background-size: 900px 600px;
+    border: 1px solid #999;
+    box-sizing: border-box;
+    transition: opacity 0.5s ease;
+    opacity: 0;
+  }
+
+  #image-container div.visible {
+    opacity: 1;
+  }
+
+  #guess-form {
+    margin-bottom: 10px;
+  }
+
+  #guess-input {
+    padding: 10px;
+    width: 300px;
+    font-size: 16px;
+  }
+
+  #guess-submit {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  #info {
+    font-size: 18px;
+    color: #555;
+    margin-top: 10px;
+  }
+
+  #history {
+    margin-top: 20px;
+    max-width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+    font-size: 16px;
+  }
+
+  #history span {
+    display: inline-block;
+    margin: 4px 6px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background-color: #eee;
+    cursor: default;
+    user-select: none;
+  }
+
+  #history span.correct {
+    background-color: #8fbc8f;
+    color: #fff;
+    font-weight: bold;
+  }
+
+  #history span.incorrect {
+    background-color: #d2691e;
+    color: #fff;
+    text-decoration: line-through;
+  }
+
+  /* Responsivo */
+  @media(max-width: 960px) {
+    #image-container {
+      max-width: 100%;
+      height: auto;
+      justify-content: center;
+    }
+    #image-container div {
+      width: 45%;  /* quase metade da tela */
+      height: 200px;
+      background-size: 600px 400px;
+      border-width: 0.5px;
+    }
+  }
+
+  @media(max-width: 480px) {
+    #image-container div {
+      width: 90%;
+      height: 150px;
+      background-size: 300px 200px;
+    }
+
+    #guess-input {
+      width: 90%;
+    }
+  }
+</style>
 </head>
 <body>
-  <h1>Jogo da Imagem</h1>
+  <h1>Qual o Carro? 🚗</h1>
 
   <div id="image-container">
-    <div style="background-position: 0px 0px;"></div>
-    <div style="background-position: -300px 0px;"></div>
-    <div style="background-position: -600px 0px;"></div>
-    <div style="background-position: 0px -300px;"></div>
-    <div style="background-position: -300px -300px;"></div>
-    <div style="background-position: -600px -300px;"></div>
+    <!-- Divs das partes da imagem serão criadas aqui pelo script -->
   </div>
 
   <form id="guess-form">
-    <input type="text" id="guess-input" placeholder="Digite seu palpite..." autocomplete="off" />
+    <input
+      type="text"
+      id="guess-input"
+      placeholder="Digite o nome do carro"
+      autocomplete="off"
+      autofocus
+      required
+    />
     <button type="submit" id="guess-submit">Chutar</button>
   </form>
 
-  <div id="info"></div>
-  <div id="guess-history"><strong>Palpites:</strong> <span id="history-list"></span></div>
+  <p id="info">Você tem 6 tentativas para adivinhar o carro!</p>
 
-  <script src="script.js"></script>
+  <div id="history"></div>
+
+<script>
+  const maxAttempts = 6;
+  let attempts = 0;
+  const revealOrder = [0, 2, 3, 5, 1, 4]; // Ordem customizada de revelação
+
+  // Respostas e imagens por data (formato YYYY-MM-DD)
+  const respostasDiarias = {
+    "2025-05-16": "civic",
+    "2025-05-17": "fusca",
+    "2025-05-18": "corolla"
+  };
+
+  // Pega a data atual no formato YYYY-MM-DD
+  function getCurrentDate() {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  const currentDate = getCurrentDate();
+  const respostaCorreta = respostasDiarias[currentDate];
+
+  if (!respostaCorreta) {
+    document.getElementById('info').textContent = "Nenhum jogo disponível para hoje.";
+    document.getElementById('guess-form').style.display = 'none';
+  }
+
+  const imageContainer = document.getElementById('image-container');
+
+  // Caminho da imagem para o dia atual
+  const imagePath = `carros/${currentDate}.jpg`;
+
+  // Criar as 6 partes da imagem
+  function createImageParts() {
+    for(let i = 0; i < 6; i++) {
+      const part = document.createElement('div');
+      part.style.backgroundImage = `url(${imagePath})`;
+      part.style.backgroundPosition = getPosition(i);
+      part.dataset.index = i;
+      imageContainer.appendChild(part);
+    }
+  }
+
+  // Posição do background para cada parte (a imagem é 900x600)
+  function getPosition(i) {
+    const partWidth = 300;
+    const partHeight = 300;
+    const row = Math.floor(i / 3);
+    const col = i % 3;
+    return `-${col * partWidth}px -${row * partHeight}px`;
+  }
+
+  // Revelar parte da imagem seguindo a ordem customizada
+  function revelarParte() {
+    const parts = imageContainer.querySelectorAll('div');
+    if (attempts - 1 < revealOrder.length) {
+      const indexToReveal = revealOrder[attempts - 1];
+      parts[indexToReveal].classList.add('visible');
+    }
+  }
+
+  // Revelar todas as partes
+  function revelarTodasPartes() {
+    const parts = imageContainer.querySelectorAll('div');
+    parts.forEach(p => p.classList.add('visible'));
+  }
+
+  // Desabilitar input após término
+  function disableInput() {
+    document.getElementById('guess-input').disabled = true;
+    document.getElementById('guess-submit').disabled = true;
+  }
+
+  // Histórico de palpites
+  const historyDiv = document.getElementById('history');
+  let guesses = [];
+
+  // Atualiza o histórico na tela
+  function atualizarHistorico() {
+    historyDiv.innerHTML = '';
+    guesses.forEach(guess => {
+      const span = document.createElement('span');
+      span.textContent = guess.text;
+      if (guess.correct) {
+        span.classList.add('correct');
+      } else {
+        span.classList.add('incorrect');
+      }
+      historyDiv.appendChild(span);
+    });
+  }
+
+  createImageParts();
+
+  const form = document.getElementById('guess-form');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (attempts >= maxAttempts) return;
+
+    const input = document.getElementById('guess-input');
+    const palpiteRaw = input.value.trim().toLowerCase();
+    const palpite = palpiteRaw.replace(/\s+/g, ''); // remove espaços
+    input.value = '';
+
+    if (!palpite) return;
+
+    // Checa se já tentou essa palavra antes
+    if (guesses.some(g => g.text === palpiteRaw)) {
+      alert("Você já tentou essa palavra.");
+      return;
+    }
+
+    attempts++;
+
+    if (palpite === respostaCorreta.toLowerCase().replace(/\s+/g, '')) {
+      guesses.push({ text: palpiteRaw, correct: true });
+      revelarTodasPartes();
+      alert('Parabéns! Você acertou o carro do dia!');
+      disableInput();
+    } else {
+      guesses.push({ text: palpiteRaw, correct: false });
+      revelarParte();
+
+      if (attempts === maxAttempts) {
+        alert(`Você perdeu! O carro do dia era: ${respostaCorreta}`);
+        revelarTodasPartes();
+        disableInput();
+      }
+    }
+
+    atualizarHistorico();
+  });
+</script>
+
 </body>
 </html>

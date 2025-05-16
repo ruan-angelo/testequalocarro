@@ -18,7 +18,7 @@
   }
 
   #image-container {
-    max-width: 900px;
+    width: 900px;
     height: 600px;
     margin: 0 auto 20px;
     display: flex;
@@ -28,8 +28,8 @@
   }
 
   #image-container div {
-    width: 33.33%;  /* 900 / 3 em desktop */
-    height: 300px;
+    width: 300px;  /* 900 / 3 */
+    height: 300px; /* 600 / 2 */
     background-repeat: no-repeat;
     background-size: 900px 600px;
     border: 1px solid #999;
@@ -65,60 +65,49 @@
   }
 
   #history {
-    margin-top: 20px;
+    margin-top: 15px;
     max-width: 320px;
     margin-left: auto;
     margin-right: auto;
-    text-align: left;
     font-size: 16px;
+    color: #222;
+    text-align: left;
   }
 
   #history span {
     display: inline-block;
-    margin: 4px 6px;
     padding: 4px 8px;
+    margin: 3px;
     border-radius: 4px;
-    background-color: #eee;
-    cursor: default;
-    user-select: none;
+    background-color: #ddd;
   }
 
   #history span.correct {
-    background-color: #8fbc8f;
-    color: #fff;
+    background-color: #a0e6a0;
     font-weight: bold;
   }
 
-  #history span.incorrect {
-    background-color: #d2691e;
-    color: #fff;
-    text-decoration: line-through;
+  #history span.wrong {
+    background-color: #e6a0a0;
   }
 
-  /* Responsivo */
-  @media(max-width: 960px) {
+  /* Responsividade */
+  @media (max-width: 960px) {
     #image-container {
-      max-width: 100%;
-      height: auto;
-      justify-content: center;
+      width: 100vw;
+      height: calc((100vw / 3) * 2); /* mantém proporção 3:2 */
+      max-height: 600px;
     }
-    #image-container div {
-      width: 45%;  /* quase metade da tela */
-      height: 200px;
-      background-size: 600px 400px;
-      border-width: 0.5px;
-    }
-  }
 
-  @media(max-width: 480px) {
     #image-container div {
-      width: 90%;
-      height: 150px;
-      background-size: 300px 200px;
+      width: calc(100vw / 3);
+      height: calc((100vw / 3) * 2 / 3); /* 300px proporção */
+      background-size: 100vw calc((100vw / 3) * 2);
     }
 
     #guess-input {
-      width: 90%;
+      width: 80vw;
+      max-width: 300px;
     }
   }
 </style>
@@ -127,7 +116,7 @@
   <h1>Qual o Carro? 🚗</h1>
 
   <div id="image-container">
-    <!-- Divs das partes da imagem serão criadas aqui pelo script -->
+    <!-- As partes da imagem serão criadas pelo JS -->
   </div>
 
   <form id="guess-form">
@@ -149,16 +138,15 @@
 <script>
   const maxAttempts = 6;
   let attempts = 0;
-  const revealOrder = [0, 2, 3, 5, 1, 4]; // Ordem customizada de revelação
+  let revealedOrder = [0, 2, 3, 5, 1, 4]; // ordem que as partes aparecem
+  let revealedIndex = 0;
 
-  // Respostas e imagens por data (formato YYYY-MM-DD)
   const respostasDiarias = {
     "2025-05-16": "civic",
     "2025-05-17": "fusca",
     "2025-05-18": "corolla"
   };
 
-  // Pega a data atual no formato YYYY-MM-DD
   function getCurrentDate() {
     const today = new Date();
     const yyyy = today.getFullYear();
@@ -169,29 +157,24 @@
 
   const currentDate = getCurrentDate();
   const respostaCorreta = respostasDiarias[currentDate];
-
-  if (!respostaCorreta) {
-    document.getElementById('info').textContent = "Nenhum jogo disponível para hoje.";
-    document.getElementById('guess-form').style.display = 'none';
-  }
-
-  const imageContainer = document.getElementById('image-container');
-
-  // Caminho da imagem para o dia atual
   const imagePath = `carros/${currentDate}.jpg`;
 
-  // Criar as 6 partes da imagem
+  const imageContainer = document.getElementById('image-container');
+  const historyDiv = document.getElementById('history');
+  const infoText = document.getElementById('info');
+
+  // Cria as 6 partes da imagem, escondidas
   function createImageParts() {
-    for(let i = 0; i < 6; i++) {
+    for (let i = 0; i < 6; i++) {
       const part = document.createElement('div');
       part.style.backgroundImage = `url(${imagePath})`;
       part.style.backgroundPosition = getPosition(i);
-      part.dataset.index = i;
+      part.classList.remove('visible');
       imageContainer.appendChild(part);
     }
   }
 
-  // Posição do background para cada parte (a imagem é 900x600)
+  // Posições de cada parte (3 colunas x 2 linhas)
   function getPosition(i) {
     const partWidth = 300;
     const partHeight = 300;
@@ -200,87 +183,76 @@
     return `-${col * partWidth}px -${row * partHeight}px`;
   }
 
-  // Revelar parte da imagem seguindo a ordem customizada
-  function revelarParte() {
+  // Revela uma parte na ordem definida
+  function revealNextPart() {
     const parts = imageContainer.querySelectorAll('div');
-    if (attempts - 1 < revealOrder.length) {
-      const indexToReveal = revealOrder[attempts - 1];
-      parts[indexToReveal].classList.add('visible');
+    if (revealedIndex < revealedOrder.length) {
+      const partToReveal = parts[revealedOrder[revealedIndex]];
+      partToReveal.classList.add('visible');
+      revealedIndex++;
     }
   }
 
-  // Revelar todas as partes
-  function revelarTodasPartes() {
+  // Revela todas as partes
+  function revealAllParts() {
     const parts = imageContainer.querySelectorAll('div');
     parts.forEach(p => p.classList.add('visible'));
   }
 
-  // Desabilitar input após término
+  // Desabilita input e botão
   function disableInput() {
     document.getElementById('guess-input').disabled = true;
     document.getElementById('guess-submit').disabled = true;
   }
 
-  // Histórico de palpites
-  const historyDiv = document.getElementById('history');
-  let guesses = [];
+  // Histórico dos palpites: array com objeto {palpite, correto: boolean}
+  let guessesHistory = [];
 
-  // Atualiza o histórico na tela
-  function atualizarHistorico() {
+  // Atualiza visual do histórico
+  function updateHistory() {
     historyDiv.innerHTML = '';
-    guesses.forEach(guess => {
+    guessesHistory.forEach(item => {
       const span = document.createElement('span');
-      span.textContent = guess.text;
-      if (guess.correct) {
-        span.classList.add('correct');
-      } else {
-        span.classList.add('incorrect');
-      }
+      span.textContent = item.palpite;
+      span.classList.add(item.correto ? 'correct' : 'wrong');
       historyDiv.appendChild(span);
     });
   }
 
-  createImageParts();
-
-  const form = document.getElementById('guess-form');
-  form.addEventListener('submit', (e) => {
+  // Evento de submit do chute
+  document.getElementById('guess-form').addEventListener('submit', e => {
     e.preventDefault();
+
     if (attempts >= maxAttempts) return;
 
     const input = document.getElementById('guess-input');
-    const palpiteRaw = input.value.trim().toLowerCase();
-    const palpite = palpiteRaw.replace(/\s+/g, ''); // remove espaços
+    const palpite = input.value.trim().toLowerCase().replace(/\s/g, '');
     input.value = '';
 
     if (!palpite) return;
 
-    // Checa se já tentou essa palavra antes
-    if (guesses.some(g => g.text === palpiteRaw)) {
-      alert("Você já tentou essa palavra.");
-      return;
-    }
-
     attempts++;
 
-    if (palpite === respostaCorreta.toLowerCase().replace(/\s+/g, '')) {
-      guesses.push({ text: palpiteRaw, correct: true });
-      revelarTodasPartes();
+    if (palpite === respostaCorreta.toLowerCase().replace(/\s/g, '')) {
+      guessesHistory.push({palpite: palpite, correto: true});
+      updateHistory();
+      revealAllParts();
       alert('Parabéns! Você acertou o carro do dia!');
       disableInput();
     } else {
-      guesses.push({ text: palpiteRaw, correct: false });
-      revelarParte();
+      guessesHistory.push({palpite: palpite, correto: false});
+      updateHistory();
+      revealNextPart();
 
       if (attempts === maxAttempts) {
         alert(`Você perdeu! O carro do dia era: ${respostaCorreta}`);
-        revelarTodasPartes();
+        revealAllParts();
         disableInput();
       }
     }
-
-    atualizarHistorico();
   });
-</script>
 
+  createImageParts();
+</script>
 </body>
 </html>

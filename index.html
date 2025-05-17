@@ -3,69 +3,64 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Jogo do Carro</title>
+  <title>Jogo do Carro Diário</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      background-color: #f0f0f0;
-      margin: 0;
-      padding: 20px;
+      background: #f0f0f0;
+      margin: 20px;
     }
 
     h1 {
       margin-bottom: 20px;
+      color: #333;
     }
 
-    .image-wrapper {
+    #image-container {
       width: 100%;
       max-width: 900px;
-      margin: 0 auto 20px;
-      position: relative;
       aspect-ratio: 3 / 2;
-      overflow: hidden;
-    }
-
-    .grid {
+      margin: 0 auto 20px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: repeat(2, 1fr);
-      width: 100%;
-      height: 100%;
+      border: 2px solid #333;
+      background: #ddd;
     }
 
-    .grid div {
-      background-image: url("carros/2025-05-16.jpg");
-      background-size: 900px 600px;
+    #image-container div {
       background-repeat: no-repeat;
+      background-size: 900px 600px;
+      border: 1px solid #999;
       opacity: 0;
       transition: opacity 0.3s ease;
-      border: 1px solid #999;
     }
 
-    .visible {
+    #image-container div.visible {
       opacity: 1;
     }
 
-    form {
-      margin-bottom: 15px;
+    #guess-form {
+      margin-bottom: 10px;
     }
 
-    input[type="text"] {
+    #guess-input {
       padding: 10px;
+      width: 300px;
+      max-width: 80%;
       font-size: 16px;
-      width: 250px;
-      max-width: 90%;
     }
 
-    button {
+    #guess-submit {
       padding: 10px 20px;
       font-size: 16px;
-      margin-left: 10px;
+      cursor: pointer;
     }
 
     #info {
-      font-size: 16px;
+      font-size: 18px;
+      color: #555;
       margin-top: 10px;
     }
 
@@ -86,13 +81,17 @@
 <body>
   <h1>Qual o carro do dia?</h1>
 
-  <div class="image-wrapper">
-    <div id="image-container" class="grid"></div>
-  </div>
+  <div id="image-container"></div>
 
   <form id="guess-form">
-    <input type="text" id="guess-input" placeholder="Digite o nome do carro" autocomplete="off" required />
-    <button type="submit">Chutar</button>
+    <input
+      id="guess-input"
+      type="text"
+      placeholder="Digite o nome do carro"
+      autocomplete="off"
+      required
+    />
+    <button id="guess-submit" type="submit">Chutar</button>
   </form>
 
   <div id="info">Tentativas (0/6):</div>
@@ -101,107 +100,122 @@
     const maxAttempts = 6;
     let attempts = 0;
 
-    const respostas = {
-      "2025-05-16": "civic",
+    const respostasDiarias = {
       "2025-05-17": "fusca",
-      "2025-05-18": "corolla"
+      "2025-05-18": "corolla",
+      "2025-05-19": "uno"
     };
 
-    const forcarData = "2025-05-16";
-
-    function getDataAtual() {
-      const hoje = forcarData ? new Date(forcarData) : new Date();
-      const yyyy = hoje.getFullYear();
-      const mm = String(hoje.getMonth() + 1).padStart(2, '0');
-      const dd = String(hoje.getDate()).padStart(2, '0');
+    function getCurrentDate() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
       return `${yyyy}-${mm}-${dd}`;
     }
 
-    const dataHoje = getDataAtual();
-    const resposta = respostas[dataHoje] || "fusca";
-    const imagemUrl = `carros/${dataHoje}.jpg`;
+    const currentDate = getCurrentDate();
+    const respostaCorreta = respostasDiarias[currentDate] || "fusca";
+    const imagePath = `carros/${currentDate}.jpg`;
 
-    const container = document.getElementById("image-container");
+    const imageContainer = document.getElementById("image-container");
+
     const revealOrder = [0, 2, 3, 5, 1, 4];
 
-    function getPosicao(i) {
-      const col = i % 3;
+    function getPosition(i) {
+      const partWidth = 300;
+      const partHeight = 300;
       const row = Math.floor(i / 3);
-      return `-${col * 300}px -${row * 300}px`;
+      const col = i % 3;
+      return `-${col * partWidth}px -${row * partHeight}px`;
     }
 
-    for (let i = 0; i < 6; i++) {
-      const bloco = document.createElement("div");
-      bloco.style.backgroundImage = `url(${imagemUrl})`;
-      bloco.style.backgroundPosition = getPosicao(i);
-      if (i === revealOrder[0]) bloco.classList.add("visible");
-      container.appendChild(bloco);
+    function createImageParts() {
+      for (let i = 0; i < 6; i++) {
+        const part = document.createElement("div");
+        part.style.backgroundImage = `url(${imagePath})`;
+        part.style.backgroundPosition = getPosition(i);
+        if (i === revealOrder[0]) {
+          part.classList.add("visible");
+        }
+        imageContainer.appendChild(part);
+      }
     }
 
-    function revelarProximo() {
+    function revelarParte() {
       for (let i = 0; i < revealOrder.length; i++) {
-        const index = revealOrder[i];
-        const bloco = container.children[index];
-        if (!bloco.classList.contains("visible")) {
-          bloco.classList.add("visible");
+        const idx = revealOrder[i];
+        const part = imageContainer.children[idx];
+        if (!part.classList.contains("visible")) {
+          part.classList.add("visible");
           break;
         }
       }
     }
 
-    function revelarTodos() {
-      Array.from(container.children).forEach(bloco => bloco.classList.add("visible"));
+    function revelarTodasPartes() {
+      for (let i = 0; i < imageContainer.children.length; i++) {
+        imageContainer.children[i].classList.add("visible");
+      }
     }
 
-    function desativarInputs() {
+    function disableInput() {
       document.getElementById("guess-input").disabled = true;
       document.getElementById("guess-submit").disabled = true;
     }
 
-    const form = document.getElementById("guess-form");
-    const input = document.getElementById("guess-input");
+    const guessForm = document.getElementById("guess-form");
+    const guessInput = document.getElementById("guess-input");
     const info = document.getElementById("info");
-    const historico = [];
 
-    form.addEventListener("submit", (e) => {
+    let guessesHistory = [];
+
+    guessForm.addEventListener("submit", (e) => {
       e.preventDefault();
       if (attempts >= maxAttempts) return;
 
-      const chute = input.value.trim().toLowerCase().replace(/\s/g, "");
-      const correto = resposta.toLowerCase().replace(/\s/g, "");
-
-      const acertou = chute === correto;
-      historico.push({ texto: input.value, acertou });
+      const palpiteRaw = guessInput.value.trim().toLowerCase().replace(/\s/g, "");
+      if (!palpiteRaw) return;
 
       attempts++;
-      atualizarInfo();
+
+      const correta = respostaCorreta.toLowerCase().replace(/\s/g, "");
+      const acertou = palpiteRaw === correta;
+
+      guessesHistory.push({ texto: guessInput.value, correto: acertou });
+
+      updateInfo();
 
       if (acertou) {
-        revelarTodos();
-        alert("Parabéns! Você acertou!");
-        desativarInputs();
+        revelarTodasPartes();
+        alert("Parabéns! Você acertou o carro do dia!");
+        disableInput();
       } else {
-        revelarProximo();
+        revelarParte();
         if (attempts === maxAttempts) {
-          alert(`Você perdeu! O carro era: ${resposta}`);
-          revelarTodos();
-          desativarInputs();
+          alert(`Você perdeu! O carro do dia era: ${respostaCorreta}`);
+          revelarTodasPartes();
+          disableInput();
         }
       }
 
-      input.value = "";
-      input.focus();
+      guessInput.value = "";
+      guessInput.focus();
     });
 
-    function atualizarInfo() {
+    function updateInfo() {
       info.innerHTML = `Tentativas (${attempts}/${maxAttempts}):<br>`;
-      historico.forEach(h => {
-        const div = document.createElement("div");
-        div.className = `guess ${h.acertou ? 'right' : 'wrong'}`;
-        div.textContent = h.texto;
-        info.appendChild(div);
+      guessesHistory.forEach((g) => {
+        const span = document.createElement("div");
+        span.classList.add("guess");
+        span.classList.add(g.correto ? "right" : "wrong");
+        span.textContent = g.texto;
+        info.appendChild(span);
       });
     }
+
+    createImageParts();
   </script>
 </body>
 </html>
+

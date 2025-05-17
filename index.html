@@ -31,7 +31,7 @@
 
     #image-container div {
       background-repeat: no-repeat;
-      background-size: 900px 600px;
+      background-size: 100% 100%; /* Dinâmico agora */
       border: 1px solid #999;
       opacity: 0;
       transition: opacity 0.3s ease;
@@ -47,8 +47,8 @@
 
     #guess-input {
       padding: 10px;
-      width: 300px;
-      max-width: 80%;
+      width: 90%;
+      max-width: 300px;
       font-size: 16px;
     }
 
@@ -75,6 +75,27 @@
 
     .right {
       color: green;
+    }
+
+    /* Responsividade */
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 20px;
+      }
+
+      #guess-input {
+        font-size: 14px;
+        width: 95%;
+      }
+
+      #guess-submit {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
+
+      #info {
+        font-size: 16px;
+      }
     }
   </style>
 </head>
@@ -123,11 +144,10 @@
     const revealOrder = [0, 2, 3, 5, 1, 4];
 
     function getPosition(i) {
-      const partWidth = 300;
-      const partHeight = 300;
       const row = Math.floor(i / 3);
       const col = i % 3;
-      return `-${col * partWidth}px -${row * partHeight}px`;
+      // Posição em porcentagem
+      return `${-(col * 100 / 2)}% ${-(row * 100 / 1)}%`;
     }
 
     function createImageParts() {
@@ -218,4 +238,3 @@
   </script>
 </body>
 </html>
-

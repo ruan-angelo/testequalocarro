@@ -20,13 +20,13 @@
     #image-container {
       width: 100%;
       max-width: 900px;
-      aspect-ratio: 3 / 2;
       margin: 0 auto 20px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: repeat(2, 1fr);
       border: 2px solid #333;
       background: #ddd;
+      position: relative;
     }
 
     #image-container div {
@@ -34,6 +34,7 @@
       border: 1px solid #999;
       opacity: 0;
       transition: opacity 0.3s ease;
+      background-size: 300% 200%; /* Ajuste para manter aspecto */
     }
 
     #image-container div.visible {
@@ -142,11 +143,11 @@
     const revealOrder = [0, 2, 3, 5, 1, 4];
 
     function getPosition(i) {
-      const partWidth = 300;
-      const partHeight = 300;
-      const row = Math.floor(i / 3);
-      const col = i % 3;
-      return `-${col * partWidth}px -${row * partHeight}px`;
+      const rows = 2;
+      const cols = 3;
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      return `${(col / cols) * 100}% ${(row / rows) * 100}%`;
     }
 
     function createImageParts() {
@@ -157,7 +158,6 @@
           const part = document.createElement("div");
           part.style.backgroundImage = `url(${imagePath})`;
           part.style.backgroundPosition = getPosition(i);
-          part.style.backgroundSize = "900px 600px";
           imageContainer.appendChild(part);
         }
         imageContainer.children[revealOrder[0]].classList.add("visible");

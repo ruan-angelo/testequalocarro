@@ -17,16 +17,28 @@
       color: #333;
     }
 
-    #image-container {
+    #image-container-wrapper {
+      position: relative;
       width: 100%;
       max-width: 900px;
-      aspect-ratio: 3 / 2;
       margin: 0 auto 20px;
+    }
+
+    #image-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: repeat(2, 1fr);
-      border: 2px solid #333;
-      background: #ddd;
+    }
+
+    #image-container-wrapper::before {
+      content: "";
+      display: block;
+      padding-top: 66.66%; /* 600 / 900 = 0.6666 (3:2 ratio) */
     }
 
     #image-container div {
@@ -81,7 +93,9 @@
 <body>
   <h1>Qual o carro do dia?</h1>
 
-  <div id="image-container"></div>
+  <div id="image-container-wrapper">
+    <div id="image-container"></div>
+  </div>
 
   <form id="guess-form">
     <input
@@ -101,13 +115,18 @@
     let attempts = 0;
 
     const respostasDiarias = {
+      "2025-05-16": "civic",
       "2025-05-17": "fusca",
-      "2025-05-18": "corolla",
-      "2025-05-19": "uno"
+      "2025-05-18": "corolla"
     };
 
+    // FORÇANDO DATA PARA TESTE LOCAL — remova ou modifique depois
+    const forcarData = "2025-05-16";
+
     function getCurrentDate() {
-      const today = new Date();
+      const today = forcarData
+        ? new Date(forcarData)
+        : new Date(new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }));
       const yyyy = today.getFullYear();
       const mm = String(today.getMonth() + 1).padStart(2, "0");
       const dd = String(today.getDate()).padStart(2, "0");

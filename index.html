@@ -26,6 +26,8 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: repeat(2, 1fr);
+      gap: 1px;
+      border: 2px solid #333; /* Bordas ao redor do contêiner */
     }
 
     #image-container div {
@@ -33,7 +35,7 @@
       border: 1px solid #999;
       opacity: 0;
       transition: opacity 0.3s ease;
-      background-size: 300% 200%; /* Ajuste para manter aspecto durante scale */
+      background-size: 900px 600px; /* Tamanho total da imagem */
     }
 
     #image-container div.visible {
@@ -124,9 +126,11 @@
     function getPosition(i) {
       const cols = 3;
       const rows = 2;
+      const widthPercent = 100 / cols;
+      const heightPercent = 100 / rows;
       const col = i % cols;
       const row = Math.floor(i / cols);
-      return `${(col / cols) * 100}% ${(row / rows) * 100}%`;
+      return `${col * widthPercent}% ${row * heightPercent}%`;
     }
 
     function createImageParts() {

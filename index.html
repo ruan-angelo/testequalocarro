@@ -20,13 +20,12 @@
     #image-container {
       width: 100%;
       max-width: 900px;
-      margin: 0 auto 20px;
+      height: auto;
+      aspect-ratio: 3 / 2;
+      margin: 0 auto;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: repeat(2, 1fr);
-      border: 2px solid #333;
-      background: #ddd;
-      position: relative;
     }
 
     #image-container div {
@@ -34,7 +33,7 @@
       border: 1px solid #999;
       opacity: 0;
       transition: opacity 0.3s ease;
-      background-size: 300% 200%; /* Ajuste para manter aspecto */
+      background-size: 300% 200%; /* Ajuste para manter aspecto durante scale */
     }
 
     #image-container div.visible {
@@ -75,26 +74,6 @@
 
     .right {
       color: green;
-    }
-
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 20px;
-      }
-
-      #guess-input {
-        font-size: 14px;
-        width: 95%;
-      }
-
-      #guess-submit {
-        font-size: 14px;
-        padding: 8px 16px;
-      }
-
-      #info {
-        font-size: 16px;
-      }
     }
   </style>
 </head>
@@ -143,8 +122,8 @@
     const revealOrder = [0, 2, 3, 5, 1, 4];
 
     function getPosition(i) {
-      const rows = 2;
       const cols = 3;
+      const rows = 2;
       const col = i % cols;
       const row = Math.floor(i / cols);
       return `${(col / cols) * 100}% ${(row / rows) * 100}%`;

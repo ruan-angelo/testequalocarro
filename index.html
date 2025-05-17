@@ -31,7 +31,6 @@
 
     #image-container div {
       background-repeat: no-repeat;
-      background-size: 300% 200%;
       border: 1px solid #999;
       opacity: 0;
       transition: opacity 0.3s ease;
@@ -143,11 +142,11 @@
     const revealOrder = [0, 2, 3, 5, 1, 4];
 
     function getPosition(i) {
+      const partWidth = 300;
+      const partHeight = 300;
       const row = Math.floor(i / 3);
       const col = i % 3;
-      const x = -(col * 100 / 2); // -0%, -50%, -100%
-      const y = -(row * 100);     // -0%, -100%
-      return `${x}% ${y}%`;
+      return `-${col * partWidth}px -${row * partHeight}px`;
     }
 
     function createImageParts() {
@@ -158,6 +157,7 @@
           const part = document.createElement("div");
           part.style.backgroundImage = `url(${imagePath})`;
           part.style.backgroundPosition = getPosition(i);
+          part.style.backgroundSize = "900px 600px";
           if (i === revealOrder[0]) {
             part.classList.add("visible");
           }

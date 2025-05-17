@@ -17,17 +17,14 @@
       color: #333;
     }
 
-    #image-container {
-      width: 100%;
-      max-width: 900px;
-      aspect-ratio: 3 / 2;
-      margin: 0 auto 20px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(2, 1fr);
-      border: 2px solid #333;
-      background: #ddd;
+    #image-container div {
+      background-repeat: no-repeat;
+      background-size: 300% 200%; /* ← proporcional ao grid (3 col x 2 row) */
+      border: 1px solid #999;
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
+
 
     #image-container div {
       background-repeat: no-repeat;
@@ -143,11 +140,9 @@
     const revealOrder = [0, 2, 3, 5, 1, 4];
 
     function getPosition(i) {
-      const partWidth = 300;
-      const partHeight = 300;
       const row = Math.floor(i / 3);
       const col = i % 3;
-      return `-${col * partWidth}px -${row * partHeight}px`;
+      return `${-(col * 100 / 2)}% ${-(row * 100 / 1)}%`;
     }
 
     function createImageParts() {

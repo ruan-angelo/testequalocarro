@@ -18,28 +18,23 @@
     }
 
     #image-container {
-      width: 900px;
-      max-width: 100%;
-      height: 600px;
-      max-height: 66.67vw; /* mantém proporção 3:2 no celular */
+      width: 100%;
+      max-width: 900px;
+      aspect-ratio: 3 / 2;
       margin: 0 auto 20px;
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
       border: 2px solid #333;
       background: #ddd;
     }
 
     #image-container div {
-      width: 300px;  /* 900 / 3 */
-      max-width: 33.33%;
-      height: 300px; /* 600 / 2 */
-      max-height: 33.33vw; /* ajusta no celular */
       background-repeat: no-repeat;
       background-size: 900px 600px;
       border: 1px solid #999;
-      box-sizing: border-box;
-      transition: opacity 0.5s ease;
       opacity: 0;
+      transition: opacity 0.3s ease;
     }
 
     #image-container div.visible {
@@ -53,6 +48,7 @@
     #guess-input {
       padding: 10px;
       width: 300px;
+      max-width: 80%;
       font-size: 16px;
     }
 
@@ -66,6 +62,19 @@
       font-size: 18px;
       color: #555;
       margin-top: 10px;
+    }
+
+    .guess {
+      margin: 5px 0;
+      font-weight: bold;
+    }
+
+    .wrong {
+      color: red;
+    }
+
+    .right {
+      color: green;
     }
   </style>
 </head>
@@ -85,17 +94,16 @@
     <button id="guess-submit" type="submit">Chutar</button>
   </form>
 
-  <div id="info">Tentativas (0/6): </div>
+  <div id="info">Tentativas (0/6):</div>
 
   <script>
     const maxAttempts = 6;
     let attempts = 0;
 
     const respostasDiarias = {
-      "2025-05-16": "civic",
       "2025-05-17": "fusca",
-      "2025-05-18": "corolla"
-      // adicione outras datas e respostas aqui
+      "2025-05-18": "corolla",
+      "2025-05-19": "uno"
     };
 
     function getCurrentDate() {
@@ -107,29 +115,26 @@
     }
 
     const currentDate = getCurrentDate();
-    const respostaCorreta = respostasDiarias[currentDate];
+    const respostaCorreta = respostasDiarias[currentDate] || "fusca";
     const imagePath = `carros/${currentDate}.jpg`;
 
     const imageContainer = document.getElementById("image-container");
 
-    // Ordem especial de revelação dos blocos
     const revealOrder = [0, 2, 3, 5, 1, 4];
 
     function getPosition(i) {
-      const partWidth = 300; // largura da parte na imagem grande
-      const partHeight = 300; // altura da parte na imagem grande
+      const partWidth = 300;
+      const partHeight = 300;
       const row = Math.floor(i / 3);
       const col = i % 3;
       return `-${col * partWidth}px -${row * partHeight}px`;
     }
 
-    // Criar as partes da imagem
     function createImageParts() {
       for (let i = 0; i < 6; i++) {
         const part = document.createElement("div");
         part.style.backgroundImage = `url(${imagePath})`;
         part.style.backgroundPosition = getPosition(i);
-        // A primeira parte da ordem deve começar visível
         if (i === revealOrder[0]) {
           part.classList.add("visible");
         }
@@ -137,7 +142,6 @@
       }
     }
 
-    // Revela o próximo bloco na ordem definida
     function revelarParte() {
       for (let i = 0; i < revealOrder.length; i++) {
         const idx = revealOrder[i];
@@ -149,7 +153,6 @@
       }
     }
 
-    // Revela todos os blocos
     function revelarTodasPartes() {
       for (let i = 0; i < imageContainer.children.length; i++) {
         imageContainer.children[i].classList.add("visible");
@@ -176,16 +179,19 @@
 
       attempts++;
 
-      guessesHistory.push(palpiteRaw);
+      const correta = respostaCorreta.toLowerCase().replace(/\s/g, "");
+      const acertou = palpiteRaw === correta;
+
+      guessesHistory.push({ texto: guessInput.value, correto: acertou });
+
       updateInfo();
 
-      if (palpiteRaw === respostaCorreta.toLowerCase().replace(/\s/g, "")) {
+      if (acertou) {
         revelarTodasPartes();
         alert("Parabéns! Você acertou o carro do dia!");
         disableInput();
       } else {
         revelarParte();
-
         if (attempts === maxAttempts) {
           alert(`Você perdeu! O carro do dia era: ${respostaCorreta}`);
           revelarTodasPartes();
@@ -198,9 +204,14 @@
     });
 
     function updateInfo() {
-      info.textContent = `Tentativas (${attempts}/${maxAttempts}): ${guessesHistory.join(
-        ", "
-      )}`;
+      info.innerHTML = `Tentativas (${attempts}/${maxAttempts}):<br>`;
+      guessesHistory.forEach((g) => {
+        const span = document.createElement("div");
+        span.classList.add("guess");
+        span.classList.add(g.correto ? "right" : "wrong");
+        span.textContent = g.texto;
+        info.appendChild(span);
+      });
     }
 
     createImageParts();

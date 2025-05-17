@@ -18,16 +18,15 @@
     }
 
     #image-container {
+      width: 100%;
       max-width: 900px;
+      aspect-ratio: 3 / 2;
       margin: 0 auto 20px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: repeat(2, 1fr);
       border: 2px solid #333;
       background: #ddd;
-      aspect-ratio: auto 2 / 3; /* fallback */
-      position: relative;
-      width: 100%;
     }
 
     #image-container div {
@@ -35,7 +34,6 @@
       border: 1px solid #999;
       opacity: 0;
       transition: opacity 0.3s ease;
-      /* largura e altura vão ser setados no JS */
     }
 
     #image-container div.visible {
@@ -142,12 +140,30 @@
     const imageContainer = document.getElementById("image-container");
 
     const revealOrder = [0, 2, 3, 5, 1, 4];
-    const rows = 2;
-    const cols = 3;
 
-    let guessesHistory = [];
+    function getPosition(i) {
+      const partWidth = 300;
+      const partHeight = 300;
+      const row = Math.floor(i / 3);
+      const col = i % 3;
+      return `-${col * partWidth}px -${row * partHeight}px`;
+    }
 
-    // Função para revelar a próxima parte
+    function createImageParts() {
+      const img = new Image();
+      img.src = imagePath;
+      img.onload = () => {
+        for (let i = 0; i < 6; i++) {
+          const part = document.createElement("div");
+          part.style.backgroundImage = `url(${imagePath})`;
+          part.style.backgroundPosition = getPosition(i);
+          part.style.backgroundSize = "900px 600px";
+          imageContainer.appendChild(part);
+        }
+        imageContainer.children[revealOrder[0]].classList.add("visible");
+      };
+    }
+
     function revelarParte() {
       for (let i = 0; i < revealOrder.length; i++) {
         const idx = revealOrder[i];
@@ -170,71 +186,11 @@
       document.getElementById("guess-submit").disabled = true;
     }
 
-    function updateInfo() {
-      const info = document.getElementById("info");
-      info.innerHTML = `Tentativas (${attempts}/${maxAttempts}):<br>`;
-      guessesHistory.forEach((g) => {
-        const span = document.createElement("div");
-        span.classList.add("guess");
-        span.classList.add(g.correto ? "right" : "wrong");
-        span.textContent = g.texto;
-        info.appendChild(span);
-      });
-    }
-
-    // Função para criar as partes da imagem com base na imagem real
-    function createImageParts(img) {
-      const imgWidth = img.naturalWidth;
-      const imgHeight = img.naturalHeight;
-      const partWidth = imgWidth / cols;
-      const partHeight = imgHeight / rows;
-
-      // Ajustar a altura do container para manter proporção
-      imageContainer.style.height = `calc( (100% / ${cols}) * ${rows} * (${partHeight} / ${partWidth}) )`;
-      // alternativa para manter proporção correta (aspect ratio): 
-      // imageContainer.style.aspectRatio = `${imgWidth} / ${imgHeight}`;
-
-      for (let i = 0; i < rows * cols; i++) {
-        const row = Math.floor(i / cols);
-        const col = i % cols;
-
-        const part = document.createElement("div");
-        part.style.backgroundImage = `url(${imagePath})`;
-        part.style.backgroundSize = `${imgWidth}px ${imgHeight}px`;
-        part.style.backgroundPosition = `-${col * partWidth}px -${row * partHeight}px`;
-
-        // Calcula tamanho da parte baseado na largura do container e número de colunas
-        // Width do container é 100%, dividido em 3 partes
-        part.style.width = `${100 / cols}%`;
-
-        // Altura do bloco proporcional à parte da imagem
-        part.style.paddingTop = `${(partHeight / partWidth) * 100}%`; // mantém proporção correta
-
-        part.style.opacity = "0";
-        part.style.border = "1px solid #999";
-        part.style.transition = "opacity 0.3s ease";
-        part.style.boxSizing = "border-box";
-
-        if (i === revealOrder[0]) {
-          part.classList.add("visible");
-          part.style.opacity = "1";
-        }
-
-        imageContainer.appendChild(part);
-      }
-    }
-
-    // Carregar a imagem para saber as dimensões reais
-    const imgLoader = new Image();
-    imgLoader.src = imagePath;
-
-    imgLoader.onload = () => {
-      createImageParts(imgLoader);
-    };
-
-    // Logica do jogo
     const guessForm = document.getElementById("guess-form");
     const guessInput = document.getElementById("guess-input");
+    const info = document.getElementById("info");
+
+    let guessesHistory = [];
 
     guessForm.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -268,6 +224,19 @@
       guessInput.value = "";
       guessInput.focus();
     });
+
+    function updateInfo() {
+      info.innerHTML = `Tentativas (${attempts}/${maxAttempts}):<br>`;
+      guessesHistory.forEach((g) => {
+        const span = document.createElement("div");
+        span.classList.add("guess");
+        span.classList.add(g.correto ? "right" : "wrong");
+        span.textContent = g.texto;
+        info.appendChild(span);
+      });
+    }
+
+    createImageParts();
   </script>
 </body>
 </html>

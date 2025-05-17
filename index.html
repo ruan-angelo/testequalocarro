@@ -20,14 +20,12 @@
     #image-container {
       width: 100%;
       max-width: 900px;
-      height: auto;
       aspect-ratio: 3 / 2;
       margin: 0 auto;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: repeat(2, 1fr);
-      gap: 1px;
-      border: 2px solid #333; /* Bordas ao redor do contêiner */
+      border: 2px solid #333;
     }
 
     #image-container div {
@@ -35,7 +33,7 @@
       border: 1px solid #999;
       opacity: 0;
       transition: opacity 0.3s ease;
-      background-size: 900px 600px; /* Tamanho total da imagem */
+      background-size: 900px 600px;
     }
 
     #image-container div.visible {
@@ -123,15 +121,15 @@
 
     const revealOrder = [0, 2, 3, 5, 1, 4];
 
-    function getPosition(i) {
-      const cols = 3;
-      const rows = 2;
-      const widthPercent = 100 / cols;
-      const heightPercent = 100 / rows;
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      return `${col * widthPercent}% ${row * heightPercent}%`;
-    }
+    // Define posições fixas para os blocos
+    const positions = [
+      '0 0',   // 1°: 300x300, do pixel 1 até o 300 horizontal e 1 até 300 vertical
+      '-300px 0', // 2°: 300x300, do pixel 301 até o 600 horizontal e 1 até 300 vertical
+      '-600px 0', // 3°: 300x300, do pixel 601 até o 900 horizontal e 1 até 300 vertical
+      '0 -300px', // 4°: 300x300, do pixel 1 até o 300 horizontal e 301 até 600 vertical
+      '-300px -300px', // 5°: 300x300, do pixel 301 até o 600 horizontal e 301 até 600 vertical
+      '-600px -300px' // 6°: 300x300, do pixel 601 até o 900 horizontal e 301 até 600 vertical
+    ];
 
     function createImageParts() {
       const img = new Image();
@@ -140,7 +138,7 @@
         for (let i = 0; i < 6; i++) {
           const part = document.createElement("div");
           part.style.backgroundImage = `url(${imagePath})`;
-          part.style.backgroundPosition = getPosition(i);
+          part.style.backgroundPosition = positions[i];
           imageContainer.appendChild(part);
         }
         imageContainer.children[revealOrder[0]].classList.add("visible");

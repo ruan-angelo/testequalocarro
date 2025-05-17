@@ -17,18 +17,21 @@
       color: #333;
     }
 
-    #image-container div {
-      background-repeat: no-repeat;
-      background-size: 300% 200%; /* ← proporcional ao grid (3 col x 2 row) */
-      border: 1px solid #999;
-      opacity: 0;
-      transition: opacity 0.3s ease;
+    #image-container {
+      width: 100%;
+      max-width: 900px;
+      aspect-ratio: 3 / 2;
+      margin: 0 auto 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      border: 2px solid #333;
+      background: #ddd;
     }
 
-
     #image-container div {
       background-repeat: no-repeat;
-      background-size: 900px 600px; /* ← Corrigido aqui */
+      background-size: 300% 200%; /* ← Correção proporcional */
       border: 1px solid #999;
       opacity: 0;
       transition: opacity 0.3s ease;
@@ -118,9 +121,9 @@
     let attempts = 0;
 
     const respostasDiarias = {
-      "2025-05-16": "civic",
       "2025-05-17": "fusca",
-      "2025-05-18": "corolla"
+      "2025-05-18": "corolla",
+      "2025-05-19": "uno"
     };
 
     function getCurrentDate() {
@@ -142,7 +145,9 @@
     function getPosition(i) {
       const row = Math.floor(i / 3);
       const col = i % 3;
-      return `${-(col * 100 / 2)}% ${-(row * 100 / 1)}%`;
+      const x = -(col * 100 / 2); // -0%, -50%, -100%
+      const y = -(row * 100);     // -0%, -100%
+      return `${x}% ${y}%`;
     }
 
     function createImageParts() {
@@ -233,4 +238,3 @@
   </script>
 </body>
 </html>
-

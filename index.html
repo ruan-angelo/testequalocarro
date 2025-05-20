@@ -20,21 +20,23 @@
     #image-container {
       width: 100%;
       max-width: 900px;
-      margin: 0 auto;
+      aspect-ratio: 3 / 2;
+      margin: 0 auto 20px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: repeat(2, 1fr);
       border: 2px solid #333;
+      background: #ddd;
     }
 
-    #image-container img {
-      width: 100%; /* Índia da largura do bloco */
-      height: auto; /* Ajusta altura proporcional */
+    #image-container div {
+      background-repeat: no-repeat;
+      border: 1px solid #999;
       opacity: 0;
       transition: opacity 0.3s ease;
     }
 
-    #image-container img.visible {
+    #image-container div.visible {
       opacity: 1;
     }
 
@@ -72,6 +74,26 @@
 
     .right {
       color: green;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 20px;
+      }
+
+      #guess-input {
+        font-size: 14px;
+        width: 95%;
+      }
+
+      #guess-submit {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
+
+      #info {
+        font-size: 16px;
+      }
     }
   </style>
 </head>
@@ -113,38 +135,41 @@
 
     const currentDate = getCurrentDate();
     const respostaCorreta = respostasDiarias[currentDate] || "fusca";
-    
-    // Array de imagens que representam as partes da imagem completa
-    const imagemPartes = [
-      `carros/${currentDate}-1.jpg`,
-      `carros/${currentDate}-2.jpg`,
-      `carros/${currentDate}-3.jpg`,
-      `carros/${currentDate}-4.jpg`,
-      `carros/${currentDate}-5.jpg`,
-      `carros/${currentDate}-6.jpg`,
-    ];
+    const imagePath = `carros/${currentDate}.jpg`;
 
     const imageContainer = document.getElementById("image-container");
 
     const revealOrder = [0, 2, 3, 5, 1, 4];
 
+    function getPosition(i) {
+      const partWidth = 300;
+      const partHeight = 300;
+      const row = Math.floor(i / 3);
+      const col = i % 3;
+      return `-${col * partWidth}px -${row * partHeight}px`;
+    }
+
     function createImageParts() {
-      imagemPartes.forEach((src, index) => {
-        const img = document.createElement("img");
-        img.src = src;
-        if (index === revealOrder[0]) {
-          img.classList.add("visible");
+      const img = new Image();
+      img.src = imagePath;
+      img.onload = () => {
+        for (let i = 0; i < 6; i++) {
+          const part = document.createElement("div");
+          part.style.backgroundImage = `url(${imagePath})`;
+          part.style.backgroundPosition = getPosition(i);
+          part.style.backgroundSize = "900px 600px";
+          imageContainer.appendChild(part);
         }
-        imageContainer.appendChild(img);
-      });
+        imageContainer.children[revealOrder[0]].classList.add("visible");
+      };
     }
 
     function revelarParte() {
       for (let i = 0; i < revealOrder.length; i++) {
         const idx = revealOrder[i];
-        const img = imageContainer.children[idx];
-        if (!img.classList.contains("visible")) {
-          img.classList.add("visible");
+        const part = imageContainer.children[idx];
+        if (!part.classList.contains("visible")) {
+          part.classList.add("visible");
           break;
         }
       }
